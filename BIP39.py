@@ -1,63 +1,87 @@
 import secrets
 import hashlib
+from binascii import unhexlify
 
 
-def entropy(nbBits):
-    n = 0
-    while(n != 128):
-        a = secrets.randbits(nbBits)
-        c = "{0:b}".format(a)
-        n = len(c)
-    return c
+#entropie aléatoire avec la librairie secrets, retournée en hexadecimal
+def entropie():
+    ent = secrets.token_hex(16)
+    return ent
 
-a = entropy(128)
 
-def checksum(entropie):
-    #hache l'entropie avec sha256
-    m = hashlib.sha256(entropie.encode()).hexdigest()
-    #convertit en bits (mais g est un string)
-    g = "{0:8b}".format(int(m,16))
+#conversion d'un hexadecimal en binaire (zfill rajoute des 0 devant si besoin en fonction de nbBits)
+def hex_to_bin(nbHex, nbBits):
+    nbBin = bin(int(nbHex,16))[2:].zfill(nbBits)
+    return nbBin
 
-    #vérifie que g fait bien 256 bits, sinon on rajoute autant de 0 que nécessaire devant
-    if len(g) != 256:
-        g = g.zfill(256)
 
-    #récupère les 4 premiers bits dans g
-    g = g[0:4]
-    return g
+def checksum(ent):
+    #hacher l'entropie avec sha256
+    entropie = unhexlify(ent)
+    hache = hashlib.sha256(entropie).hexdigest()
 
-b = checksum(a)
+    #convertit la sortie du hash en binaire
+    hacheBin = hex_to_bin(hache,256)
 
-def concatenation(entropie,cs):
-    seed = entropie + cs
+    #récupère les 4 premiers bits du hash : c'est le checksum
+    hacheBin = hacheBin[0:4]
+
+    return hacheBin
+
+
+#concatène l'entropie et le checksum (en binaire)
+def concatenation(ent, checksum):
+    #convertit l'entropie en binaire
+    entropie = hex_to_bin(ent,128)
+    #concatène
+    seed = entropie + checksum
     return seed
 
-seed = concatenation(a,b)
-print("seed : ", seed)
 
-def split(graine):
+#séparation des 132 bits en 12 segments de 11 bits
+def split(seed):
     i=0
     segments = []
     for i in range(12):
-        s = graine[i+10*i:i+10*(i+1)+1]
+        s = seed[i+10*i:i+10*(i+1)+1]
         segments.append(s)
     return segments
 
-segments = split(seed)
-print(segments)
 
-for s in segments :
-    print(int(s,2))
-
-
-
+#récupération des mots correspondant à chaque bloc de 11 bits
 def words(segments):
+    #stockage de la liste des mots dans un tableau
     with open("wordlist.txt", "r") as f:
         wordlist = [w.strip() for w in f.readlines()]
+
     mnemonic = []
     for s in segments:
+        #convertit chaque bloc en int
         index = int(s,2)
+        #récupère le mot dans la wordlist avec l'index correspondant
         mnemonic.append(wordlist[index])
     return mnemonic
 
-print(words(segments))
+
+#pour un meilleur affichage du mnemonic
+def affichage(tab):
+    mnemonic = ''
+    for elt in tab:
+        mnemonic += elt
+        mnemonic += ' '
+    return mnemonic
+
+
+
+if __name__ == "__main__":
+    #entropie
+    ent = entropie()
+    #checksum à partir de l'entropie
+    cs = checksum(ent)
+    #concaténation de l'entropie et du checksum
+    seed = concatenation(ent,cs)
+    #séparation en blocs de 11 bits
+    segments = split(seed)
+    #récupération des mots et affichage
+    mnemonic_tab = words(segments)
+    print(affichage(mnemonic_tab))
