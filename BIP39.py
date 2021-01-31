@@ -137,4 +137,8 @@ if __name__ == "__main__":
         if validSeed:
             print("Votre seed mnémonic est valide")
         else:
+<<<<<<< HEAD
             print("Votre seed mnémonic n'est pas valide")
+=======
+            print("Votre seed mnémonic n'est pas valide")
+>>>>>>> ef80bc1e8465cd560c3978f052fec04df624eb24
