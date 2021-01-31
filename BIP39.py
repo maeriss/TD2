@@ -72,16 +72,69 @@ def affichage(tab):
     return mnemonic
 
 
+#vérifie qu'une seed importée est valide ou non
+def checkSeed(seed):
+    #sépare les mots de la seed et les stocke dans une liste
+    seed = seed.split()
+
+    #stockage de la liste des mots dans un tableau
+    with open("wordlist.txt", "r") as f:
+        wordlist = [w.strip() for w in f.readlines()]
+
+    #récupère l'index de chaque mot dans la wordlist et les stocke
+    indexes = []
+    for words in seed:
+        indexes.append(wordlist.index(words))
+
+    #convertit les index en binaire (12 blocs de 11-bits)
+    segments = []
+    for index in indexes:
+        segments.append(bin(index)[2:].zfill(11))
+
+    #concatène tous les blocs de 11-bits
+    concatenation = ''
+    for s in segments :
+        concatenation += s
+
+    #séparation de l'entropie et du checksum
+    entropie = concatenation[0:-4]
+    cs = concatenation[-4:]
+
+    #hache l'entropie avec sha256 pour récupérer le checksum théorique
+    ent = hex(int(entropie, 2))[2:]
+    theoric_checksum = checksum(ent)
+
+    #regarde si le checksum de la seed et celui théorique sont les mêmes
+    if cs == theoric_checksum:
+        return True
+    else:
+        return False
+
+
 
 if __name__ == "__main__":
-    #entropie
-    ent = entropie()
-    #checksum à partir de l'entropie
-    cs = checksum(ent)
-    #concaténation de l'entropie et du checksum
-    seed = concatenation(ent,cs)
-    #séparation en blocs de 11 bits
-    segments = split(seed)
-    #récupération des mots et affichage
-    mnemonic_tab = words(segments)
-    print(affichage(mnemonic_tab))
+    print("Que voulez-vous faire ?")
+    option = input('1 Créer une seed en mnémonique\n2 importer une seed\n')
+
+    if option == '1':
+        #entropie
+        ent = entropie()
+        #checksum à partir de l'entropie
+        cs = checksum(ent)
+        #concaténation de l'entropie et du checksum
+        seed = concatenation(ent,cs)
+        #séparation en blocs de 11 bits
+        segments = split(seed)
+        #récupération des mots et affichage
+        mnemonic_tab = words(segments)
+        print(affichage(mnemonic_tab))
+
+    elif option == '2':
+        #demande à l'utilisateur la seed qu'il veut importer et vérifier
+        seed_import = input("Veuillez rentrer votre seed (12 mots séparés par un espace) : ")
+        #check la seed
+        validSeed = checkSeed(seed_import)
+        if validSeed:
+            print("Votre seed mnémonic est valide")
+        else:
+            print("Votre seed mnémonic n'est pas valide")
