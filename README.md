@@ -12,4 +12,5 @@ Un menu est proposé au lancement :
 
 ## BIP 32
 
-Lorsqu'on vous demande d'entrer votre mnémonic, celui-ci n'est pas vérifié. Il faut le faire au préalable à l'aide du BIP39 (option 2 : "importer une seed")
+Lorsqu'on vous demande d'entrer votre mnémonic, celui-ci n'est pas vérifié. Il faut le faire au préalable à l'aide du BIP39 (option 2 : "importer une seed").
+Il vous est proposé de rentrer une phrase secrète s'ajoutant au salt au moment de la génération de la root seed. Cette phrase secrète peut contenir n'importe quoi et est optionnelle (vous pouvez donc simplement appuyer sur entrée si vous ne souhaitez pas en ajouter)
