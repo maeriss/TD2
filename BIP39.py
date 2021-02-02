@@ -83,13 +83,17 @@ def checkSeed(seed):
 
     #récupère l'index de chaque mot dans la wordlist et les stocke
     indexes = []
-    for words in seed:
-        indexes.append(wordlist.index(words))
+    for word in seed:
+        if not word in wordlist:
+            print(f"{word} n'est pas dans la liste")
+            return False
+        indexes.append(wordlist.index(word))
 
     #convertit les index en binaire (12 blocs de 11-bits)
     segments = []
     for index in indexes:
         segments.append(bin(index)[2:].zfill(11))
+
 
     #concatène tous les blocs de 11-bits
     concatenation = ''
@@ -101,14 +105,11 @@ def checkSeed(seed):
     cs = concatenation[-4:]
 
     #hache l'entropie avec sha256 pour récupérer le checksum théorique
-    ent = hex(int(entropie, 2))[2:]
+    ent = hex(int(entropie, 2))[2:].zfill(32)
     theoric_checksum = checksum(ent)
 
     #regarde si le checksum de la seed et celui théorique sont les mêmes
-    if cs == theoric_checksum:
-        return True
-    else:
-        return False
+    return cs==theoric_checksum
 
 
 
@@ -137,8 +138,4 @@ if __name__ == "__main__":
         if validSeed:
             print("Votre seed mnémonic est valide")
         else:
-<<<<<<< HEAD
             print("Votre seed mnémonic n'est pas valide")
-=======
-            print("Votre seed mnémonic n'est pas valide")
->>>>>>> ef80bc1e8465cd560c3978f052fec04df624eb24
